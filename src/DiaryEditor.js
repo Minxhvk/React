@@ -1,36 +1,43 @@
-import {useRef, useState } from "react";
+import { useRef, useState } from 'react';
 
-const DiaryEditor = () => {
-
+const DiaryEditor = ({ onCreate }) => {
   const authorInput = useRef();
   const contentInput = useRef();
 
   const [state, setState] = useState({
-    author: "",
-    content: "",
+    author: '',
+    content: '',
     emotion: 1,
   });
 
   const handleChangeState = (e) => {
-      setState({
-        ...state,
-        [e.target.name]: e.target.value
-      });
-  }
+    setState({
+      ...state,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = () => {
-    if(state.author.length < 1) {
+    if (state.author.length < 1) {
       authorInput.current.focus();
       return;
     }
 
-    if(state.content.length < 5) {
+    if (state.content.length < 5) {
       contentInput.current.focus();
       return;
     }
 
-    alert("저장 성공");
-  }
+    onCreate(state.author, state.content, state.emotion);
+
+    setState({
+      author: '',
+      content: '',
+      emotion: 1,
+    });
+
+    alert('저장 성공');
+  };
 
   return (
     <div className="DiaryEditor">
@@ -40,9 +47,9 @@ const DiaryEditor = () => {
         <input
           ref={authorInput}
           name="author"
-          value={state.author} 
+          value={state.author}
           onChange={handleChangeState}
-          />
+        />
       </div>
       <div>
         <textarea
@@ -54,8 +61,12 @@ const DiaryEditor = () => {
       </div>
 
       <div>
-        감정 점수 : 
-        <select name="emotion" value={state.emotion} onChange={handleChangeState}>
+        감정 점수 :
+        <select
+          name="emotion"
+          value={state.emotion}
+          onChange={handleChangeState}
+        >
           <option value={1}>1</option>
           <option value={2}>2</option>
           <option value={3}>3</option>
@@ -68,6 +79,6 @@ const DiaryEditor = () => {
       </div>
     </div>
   );
-}
+};
 
-export default DiaryEditor
+export default DiaryEditor;
