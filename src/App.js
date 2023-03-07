@@ -1,12 +1,41 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import './App.css';
 import DiaryEditor from './DiaryEditor';
 import DiaryList from './DiaryList';
 import LifeCycle from './LifeCycle';
 import OptimizeTest from './OptimizeTest';
 
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'INIT': {
+      return action.data;
+    }
+    case 'CREATE': {
+      const created_date = new Date().getTime();
+      const newItem = {
+        ...action.data,
+        created_date,
+      };
+      return [newItem, ...state];
+    }
+    case 'REMOVE': {
+      return state.filter((it) => it.id !== action.targetId);
+    }
+    case 'EDIT': {
+      return state.map((it) =>
+        it.id === action.targetId ? { ...it, content: action.newContent } : it
+      );
+    }
+    default:
+      return state;
+  }
+};
+
 function App() {
-  const [data, setData] = useState([]);
+  // const [data, setData] = useState([]);
+
+  // useReducer는 useCallback을 사용하지 않아도 자동으로 적용된다 ?
+  const [data, dispatch] = useReducer(reducer, []);
 
   const dataId = useRef(0);
 
@@ -25,7 +54,7 @@ function App() {
       };
     });
 
-    setData(initData);
+    dispatch({ type: 'INIT', data: initData });
   };
 
   useEffect(() => {
@@ -34,33 +63,34 @@ function App() {
 
   // useCallback -> Callback을 memo 후 변화하지 않으면 재선언 X
   const onCreate = useCallback((author, content, emotion) => {
-    const created_date = new Date().getTime();
-    const newItem = {
-      author,
-      content,
-      emotion,
-      created_date,
-      id: dataId.current,
-    };
+    dispatch({
+      type: 'CREATE',
+      data: { author, content, emotion, id: dataId.current },
+    });
 
     dataId.current += 1;
 
-    // 함수형 업데이트를 통해 첫 번째 선언 때에도 최신 데이터를 반영하게 한다.
-    setData((data) => [newItem, ...data]);
+    // 함수형 업데이트를 통해 최신 데이터를 반영하게 한다.
+    // setData((data) => [newItem, ...data]);
   }, []);
 
-  const onRemove = (targetId) => {
-    const newDiaryList = data.filter((it) => it.id !== targetId);
-    setData(newDiaryList);
-  };
+  const onRemove = useCallback((targetId) => {
+    dispatch({ type: 'REMOVE', data: targetId });
 
-  const onEdit = (targetId, newContent) => {
-    setData(
-      data.map((it) =>
-        it.id === targetId ? { ...it, content: newContent } : it
-      )
-    );
-  };
+    // 함수형 업데이트를 통해 최신 데이터를 반영하게 한다.
+    // setData((data) => data.filter((it) => it.id !== targetId));
+  }, []);
+
+  const onEdit = useCallback((targetId, newContent) => {
+    dispatch({ type: 'EDIT', data: newContent });
+
+    // 함수형 업데이트를 통해 최신 데이터를 반영하게 한다.
+    // setData((data) =>
+    //   data.map((it) =>
+    //     it.id === targetId ? { ...it, content: newContent } : it
+    //   )
+    // );
+  }, []);
 
   // useMemo -> 배열에 있는 값들이 수정되기 전에는 업데이트하지 않는다.
   const getDiaryAnalysis = useMemo(() => {

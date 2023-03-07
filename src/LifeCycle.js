@@ -20,7 +20,7 @@ const LifeCycle = () => {
   const [isVisible, setIsVisible] = useState(false);
   const toggle = () => setIsVisible(!isVisible);
 
-  // Create;
+  // Create
   useEffect(() => {
     console.log('Mount !');
   }, []);
