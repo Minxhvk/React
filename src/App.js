@@ -102,6 +102,10 @@ function App() {
     // );
   }, []);
 
+  const memoizedDispatches = useMemo(() => {
+    return [onCreate, onRemove, onEdit];
+  });
+
   // useMemo -> 배열에 있는 값들이 수정되기 전에는 업데이트하지 않는다.
   const getDiaryAnalysis = useMemo(() => {
     const goodCount = data.filter((it) => it.emotion >= 3).length;
@@ -115,7 +119,7 @@ function App() {
 
   return (
     <DiaryStateContext.Provider value={data}>
-      <DiaryDispatchContext>
+      <DiaryDispatchContext value={memoizedDispatches}>
         <div className="App">
           <LifeCycle />
           <OptimizeTest />
